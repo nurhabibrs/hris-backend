@@ -31,4 +31,8 @@ export class UserDto {
   @IsOptional()
   @IsNumber()
   position_id?: number;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

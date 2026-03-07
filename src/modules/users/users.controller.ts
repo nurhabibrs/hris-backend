@@ -2,11 +2,13 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -27,6 +29,30 @@ interface AuthenticatedUser {
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  getAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  getById(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() dto: UserDto, @Req() req: Request) {
+    const currentUser = req.user as AuthenticatedUser;
+
+    if (currentUser.role !== (UserRole.ADMIN as string)) {
+      throw new ForbiddenException('Only admins can create users');
+    }
+
+    return this.usersService.create(dto);
+  }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
