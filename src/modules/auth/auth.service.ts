@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/users.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -71,5 +73,9 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = saved;
     return result;
+  }
+
+  logout(token: string): void {
+    this.tokenBlacklistService.add(token);
   }
 }

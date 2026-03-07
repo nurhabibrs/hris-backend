@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
+
+import { TokenBlacklistService } from './token-blacklist.service';
 
 interface JwtPayload {
   sub: number;
@@ -10,15 +13,20 @@ interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly tokenBlacklistService: TokenBlacklistService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET_KEY || 'the-default-secret-key',
+      secretOrKey: process.env.JWT_SECRET_KEY!,
+      passReqToCallback: true,
     });
   }
 
-  validate(payload: JwtPayload) {
+  validate(req: Request, payload: JwtPayload) {
+    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    if (token && this.tokenBlacklistService.has(token)) {
+      throw new UnauthorizedException('Token has been invalidated');
+    }
     return {
       userId: payload.sub,
       email: payload.email,
