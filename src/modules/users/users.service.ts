@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 
 import { User } from './users.entity';
 import { Position } from '../positions/positions.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +17,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: number, dto: UserDto) {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],

@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { UserRole } from '../users.entity';
 
-export class UpdateUserDto {
+export class UserDto {
   @IsOptional()
   @IsString()
   name?: string;

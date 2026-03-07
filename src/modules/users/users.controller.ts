@@ -14,7 +14,7 @@ import type { Request } from 'express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 import { UserRole } from './users.entity';
 
 interface AuthenticatedUser {
@@ -32,7 +32,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateUserDto,
+    @Body() dto: UserDto,
     @Req() req: Request,
   ) {
     const currentUser = req.user as AuthenticatedUser;
