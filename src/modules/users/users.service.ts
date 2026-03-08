@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from './users.entity';
 import { Position } from '../positions/positions.entity';
-import { UserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +18,9 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(dto: UserDto) {
+  async create(
+    dto: CreateUserDto,
+  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
     const existing = await this.usersRepository.findOne({
       where: { email: dto.email },
     });
@@ -49,7 +51,10 @@ export class UsersService {
     };
   }
 
-  async findAll() {
+  async findAll(): Promise<{
+    message: string;
+    data: Omit<User, 'password'>[];
+  }> {
     const users = await this.usersRepository.find({ relations: ['position'] });
 
     return {
@@ -59,7 +64,9 @@ export class UsersService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(
+    id: number,
+  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],
@@ -77,7 +84,10 @@ export class UsersService {
     };
   }
 
-  async update(id: number, dto: UserDto) {
+  async update(
+    id: number,
+    dto: UpdateUserDto,
+  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],

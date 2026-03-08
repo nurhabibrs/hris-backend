@@ -16,7 +16,7 @@ import type { Request } from 'express';
 
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { UserRole } from './users.entity';
 
 interface AuthenticatedUser {
@@ -44,7 +44,7 @@ export class UsersController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  create(@Body() dto: UserDto, @Req() req: Request) {
+  create(@Body() dto: CreateUserDto, @Req() req: Request) {
     const currentUser = req.user as AuthenticatedUser;
 
     if (currentUser.role !== (UserRole.ADMIN as string)) {
@@ -58,7 +58,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UserDto,
+    @Body() dto: UpdateUserDto,
     @Req() req: Request,
   ) {
     const currentUser = req.user as AuthenticatedUser;

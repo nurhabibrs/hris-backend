@@ -6,15 +6,18 @@ import {
   IsString,
 } from 'class-validator';
 import { UserRole } from '../users.entity';
+import { PartialType } from '@nestjs/mapped-types';
 
-export class UserDto {
-  @IsOptional()
+export class CreateUserDto {
   @IsString()
-  name?: string;
+  name!: string;
 
-  @IsOptional()
   @IsEmail()
-  email?: string;
+  email!: string;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
 
   @IsOptional()
   @IsString()
@@ -24,15 +27,13 @@ export class UserDto {
   @IsString()
   photo_url?: string;
 
-  @IsOptional()
   @IsEnum(UserRole)
+  @IsOptional()
   role?: UserRole;
 
   @IsOptional()
   @IsNumber()
   position_id?: number;
-
-  @IsOptional()
-  @IsString()
-  password?: string;
 }
+
+export class UpdateUserDto extends PartialType(CreateUserDto) {}
