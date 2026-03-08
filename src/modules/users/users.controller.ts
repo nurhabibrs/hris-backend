@@ -33,7 +33,13 @@ export class UsersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll() {
+  findAll(@Req() req: Request) {
+    const currentUser = req.user as AuthenticatedUser;
+
+    if (currentUser.role !== (UserRole.ADMIN as string)) {
+      throw new ForbiddenException('Only admins can show all users');
+    }
+
     return this.usersService.findAll();
   }
 

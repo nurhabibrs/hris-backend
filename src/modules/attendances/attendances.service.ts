@@ -3,6 +3,7 @@ import { Attendance } from './attendances.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
+import { FindAllAttendanceDto } from './dto/findAllAttendance.dto';
 
 const CHECK_IN_DEADLINE_HOUR = 7;
 const CHECK_OUT_EARLIEST_HOUR = 17;
@@ -76,5 +77,62 @@ export class AttendancesService {
     const saved = await this.attendancesRepository.save(attendance);
 
     return { message: 'Checked out successfully', data: saved };
+  }
+
+  async findAll(query: FindAllAttendanceDto): Promise<{
+    message: string;
+    data: (Omit<Attendance, 'user'> & {
+      user: Omit<
+        Attendance['user'],
+        'password' | 'photo_url' | 'phone_number' | 'role'
+      >;
+    })[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
+    const { page, limit, userId, startDate, endDate, isLate } = query;
+
+    const qb = this.attendancesRepository
+      .createQueryBuilder('attendance')
+      .leftJoinAndSelect('attendance.user', 'user')
+      .orderBy('attendance.attendance_date', 'DESC');
+
+    if (userId) {
+      qb.andWhere('user.id = :userId', { userId });
+    }
+
+    if (startDate) {
+      qb.andWhere('attendance.attendance_date >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      qb.andWhere('attendance.attendance_date <= :endDate', { endDate });
+    }
+
+    if (isLate !== undefined) {
+      qb.andWhere('attendance.is_late = :isLate', { isLate });
+    }
+
+    const [attendances, total] = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    const data = attendances.map((attendance) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, photo_url, phone_number, role, ...user } =
+        attendance.user;
+      return { ...attendance, user: user };
+    });
+
+    return {
+      message: 'Attendances retrieved successfully',
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }
