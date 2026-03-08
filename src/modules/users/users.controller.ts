@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -25,6 +26,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { JwtPayload as AuthenticatedUser } from '../../interfaces/jwt.interface';
+import { FindAllUserDto } from './dto/findUser.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -33,14 +35,14 @@ export class UsersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll(@Req() req: Request) {
+  findAll(@Req() req: Request, @Query() query: FindAllUserDto) {
     const currentUser = req.user as AuthenticatedUser;
 
     if (currentUser.role !== (UserRole.ADMIN as string)) {
       throw new ForbiddenException('Only admins can show all users');
     }
 
-    return this.usersService.findAll();
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

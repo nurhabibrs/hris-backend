@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './users.entity';
 import { Position } from '../positions/positions.entity';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { FindAllUserDto } from './dto/findUser.dto';
 @Injectable()
 export class UsersService {
   constructor(
@@ -50,16 +51,47 @@ export class UsersService {
     };
   }
 
-  async findAll(): Promise<{
+  async findAll(query: FindAllUserDto): Promise<{
     message: string;
     data: Omit<User, 'password'>[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
-    const users = await this.usersRepository.find({ relations: ['position'] });
+    const { name, page, limit, order } = query;
+
+    const qb = this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.name',
+        'user.email',
+        'user.role',
+        'user.created_at',
+        'position.id',
+        'position.name',
+      ])
+      .leftJoin('user.position', 'position')
+      .orderBy('user.created_at', order === 'desc' ? 'DESC' : 'ASC');
+
+    if (name) {
+      qb.andWhere('user.name ILIKE :name', { name: `${name}%` });
+    }
+
+    const users = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const total = await qb.getCount();
 
     return {
       message: 'Users retrieved successfully',
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      data: users.map(({ password, ...result }) => result),
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 

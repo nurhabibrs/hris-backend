@@ -89,12 +89,22 @@ export class AttendancesService {
     })[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
-    const { page, limit, userId, startDate, endDate, isLate } = query;
+    const { page, limit, userId, startDate, endDate, isLate, order } = query;
 
     const qb = this.attendancesRepository
       .createQueryBuilder('attendance')
-      .leftJoinAndSelect('attendance.user', 'user')
-      .orderBy('attendance.attendance_date', 'DESC');
+      .select([
+        'attendance.id',
+        'attendance.attendance_date',
+        'attendance.check_in',
+        'attendance.check_out',
+        'attendance.is_late',
+        'user.id',
+        'user.name',
+        'user.email',
+      ])
+      .leftJoin('attendance.user', 'user')
+      .orderBy('attendance.attendance_date', order === 'desc' ? 'DESC' : 'ASC');
 
     if (userId) {
       qb.andWhere('user.id = :userId', { userId });
@@ -112,21 +122,16 @@ export class AttendancesService {
       qb.andWhere('attendance.is_late = :isLate', { isLate });
     }
 
-    const [attendances, total] = await qb
+    const attendances = await qb
       .skip((page - 1) * limit)
       .take(limit)
-      .getManyAndCount();
+      .getMany();
 
-    const data = attendances.map((attendance) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, photo_url, phone_number, role, ...user } =
-        attendance.user;
-      return { ...attendance, user: user };
-    });
+    const total = await qb.getCount();
 
     return {
       message: 'Attendances retrieved successfully',
-      data,
+      data: attendances,
       meta: {
         total,
         page,

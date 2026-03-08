@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsInt,
   IsOptional,
+  IsString,
   Min,
 } from 'class-validator';
 
@@ -42,6 +43,10 @@ export class FindAllAttendanceDto {
   })
   @IsBoolean()
   isLate?: boolean;
+
+  @IsOptional()
+  @IsString()
+  order?: string = 'desc';
 }
 
 export class FindByIdDto extends OmitType(FindAllAttendanceDto, [
