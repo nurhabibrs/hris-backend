@@ -4,6 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
+  ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { UserRole } from '../users.entity';
@@ -13,7 +15,14 @@ export class CreateUserDto {
   @IsString()
   name!: string;
 
+  @ValidateIf(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (obj) => obj.email !== undefined && obj.email !== null && obj.email !== '',
+  )
   @IsEmail()
+  @Matches(/@dexa\.co\.id$/, {
+    message: 'Email must be a company email (@dexa.co.id)',
+  })
   email!: string;
 
   @IsOptional()
