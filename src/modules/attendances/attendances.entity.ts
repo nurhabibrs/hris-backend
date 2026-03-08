@@ -45,6 +45,14 @@ export class Attendance {
   })
   check_out!: Date;
 
+  @Column({
+    name: 'is_late',
+    type: 'boolean',
+    default: false,
+    comment: 'apakah terlambat (check_in setelah 07:00)',
+  })
+  is_late!: boolean;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   created_at!: Date;
 

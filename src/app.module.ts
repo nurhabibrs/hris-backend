@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { PositionsModule } from './modules/positions/positions.module';
 import { dataSourceOptions } from './database/dataSource';
+import { AttendancesModule } from './modules/attendances/attendances.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { dataSourceOptions } from './database/dataSource';
       autoLoadEntities: true,
     }),
     AuthModule,
+    AttendancesModule,
     UsersModule,
     PositionsModule,
   ],
