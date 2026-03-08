@@ -23,7 +23,6 @@ export class PositionsController {
   @Post()
   @HttpCode(HttpStatus.OK)
   create(@Body() dto: CreatePositionDto, @Req() req: Request) {
-    console.log('Received create position request with data:', dto);
     const currentUser = req.user as AuthenticatedUser;
 
     if (currentUser.role !== (UserRole.ADMIN as string)) {
