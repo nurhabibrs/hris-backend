@@ -1,3 +1,4 @@
+import { OmitType } from '@nestjs/mapped-types';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -42,3 +43,7 @@ export class FindAllAttendanceDto {
   @IsBoolean()
   isLate?: boolean;
 }
+
+export class FindByIdDto extends OmitType(FindAllAttendanceDto, [
+  'userId',
+] as const) {}
