@@ -4,13 +4,14 @@ import { DataSource } from 'typeorm';
 
 // for module
 export const dataSourceOptions: DataSourceOptions = {
-  type: 'postgres',
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  type: (process.env.DB_TYPE || 'postgres') as any,
   host: process.env.DB_HOST ?? 'localhost',
   port: Number(process.env.DB_PORT) || 5432,
   username: process.env.DB_USERNAME ?? '',
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'hris_db',
-  synchronize: false,
+  synchronize: Boolean(process.env.DATASOURCE_SYNC) || false,
 };
 
 // for migrations
