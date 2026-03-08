@@ -21,7 +21,7 @@ export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Post()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreatePositionDto, @Req() req: Request) {
     const currentUser = req.user as AuthenticatedUser;
 

@@ -33,10 +33,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Req() req: Request) {
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
     this.authService.logout(token);
-    return { message: 'Logged out successfully' };
   }
 }

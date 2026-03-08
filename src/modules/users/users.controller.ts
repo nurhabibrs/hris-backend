@@ -52,7 +52,7 @@ export class UsersController {
   }
 
   @Post()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateUserDto, @Req() req: Request) {
     const currentUser = req.user as AuthenticatedUser;
 
