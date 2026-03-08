@@ -2,7 +2,7 @@
 import { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
 
-// Shared base options used by the NestJS app (no entity glob — autoLoadEntities handles it)
+// for module
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: process.env.DB_HOST ?? 'localhost',
@@ -13,7 +13,7 @@ export const dataSourceOptions: DataSourceOptions = {
   synchronize: false,
 };
 
-// CLI-only DataSource (used by migration:run, migration:generate, etc.)
+// for migrations
 export default new DataSource({
   ...dataSourceOptions,
   entities: ['src/**/*.entity.ts'],
