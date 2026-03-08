@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { UserRole } from '../users.entity';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -15,8 +16,8 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   password?: string;
 
   @IsOptional()
@@ -27,12 +28,14 @@ export class CreateUserDto {
   @IsString()
   photo_url?: string;
 
-  @IsEnum(UserRole)
   @IsOptional()
+  @IsEnum(UserRole)
   role?: UserRole;
 
   @IsOptional()
   @IsNumber()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  @Transform(({ value }) => (value !== undefined ? Number(value) : value))
   position_id?: number;
 }
 
