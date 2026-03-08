@@ -10,7 +10,6 @@ import * as bcrypt from 'bcrypt';
 import { User } from './users.entity';
 import { Position } from '../positions/positions.entity';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
-
 @Injectable()
 export class UsersService {
   constructor(
@@ -87,7 +86,7 @@ export class UsersService {
   async update(
     id: number,
     dto: UpdateUserDto,
-  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
+  ): Promise<{ message: string; data: Omit<User, 'password'> | null }> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],
@@ -106,18 +105,29 @@ export class UsersService {
       }
     }
 
-    const { position_id, ...fields } = dto;
+    Object.assign(user, dto);
 
-    Object.assign(user, fields);
+    if (dto.password) {
+      user.password = await bcrypt.hash(dto.password, 10);
+    }
 
-    if (position_id !== undefined) {
-      user.position = { id: position_id } as Position;
+    if (dto.position_id) {
+      user.position = { id: dto.position_id } as Position;
     }
 
     const saved = await this.usersRepository.save(user);
 
+    const updatedUser = await this.usersRepository.findOne({
+      where: { id: saved.id },
+      relations: ['position'],
+    });
+
+    if (!updatedUser) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = saved;
+    const { password, ...result } = updatedUser;
     return {
       message: 'User updated successfully',
       data: result,

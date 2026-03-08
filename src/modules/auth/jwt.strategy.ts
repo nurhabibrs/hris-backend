@@ -4,12 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 
 import { TokenBlacklistService } from './token-blacklist.service';
-
-interface JwtPayload {
-  userId: number;
-  email: string;
-  role: string;
-}
+import { JwtPayload } from '../../interfaces/jwt.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

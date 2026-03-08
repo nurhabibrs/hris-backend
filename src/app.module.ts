@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { PositionsModule } from './modules/positions/positions.module';
 import { dataSourceOptions } from './database/data-source';
 
 @Module({
@@ -16,6 +17,7 @@ import { dataSourceOptions } from './database/data-source';
     }),
     AuthModule,
     UsersModule,
+    PositionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -24,12 +24,7 @@ import { UserRole } from './users.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-
-interface AuthenticatedUser {
-  userId: number;
-  email: string;
-  role: string;
-}
+import { JwtPayload as AuthenticatedUser } from '../../interfaces/jwt.interface';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -89,13 +84,22 @@ export class UsersController {
     @Req() req: Request,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    const currentUser = req.user as AuthenticatedUser;
+    const authUser = req.user as AuthenticatedUser;
 
-    const isSelf = currentUser.userId === id;
-    const isAdmin = currentUser.role === (UserRole.ADMIN as string);
+    const isSelf = authUser.userId === id;
+    const isAdmin = authUser.role === (UserRole.ADMIN as string);
 
     if (!isSelf && !isAdmin) {
       throw new ForbiddenException('You can only update your own profile');
+    }
+
+    if (
+      (dto.role || dto.position_id || dto.name || dto.email) &&
+      authUser.role !== (UserRole.ADMIN as string)
+    ) {
+      throw new ForbiddenException(
+        'Only admins can update roles, names, email, or positions',
+      );
     }
 
     if (file) {
