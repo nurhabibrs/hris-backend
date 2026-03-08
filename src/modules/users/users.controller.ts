@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { UserRole } from './users.entity';

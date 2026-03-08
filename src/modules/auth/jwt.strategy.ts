@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { TokenBlacklistService } from './token-blacklist.service';
 
 interface JwtPayload {
-  sub: number;
+  userId: number;
   email: string;
   role: string;
 }
@@ -28,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token has been invalidated');
     }
     return {
-      userId: payload.sub,
+      userId: payload.userId,
       email: payload.email,
       role: payload.role,
     };
