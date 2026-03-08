@@ -11,7 +11,7 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USERNAME ?? '',
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'hris_db',
-  synchronize: Boolean(process.env.DATASOURCE_SYNC) || false,
+  synchronize: process.env.NODE_ENV === 'production',
 };
 
 // for migrations
