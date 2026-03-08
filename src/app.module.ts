@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { PositionsModule } from './modules/positions/positions.module';
-import { dataSourceOptions } from './database/data-source';
+import { dataSourceOptions } from './database/dataSource';
 
 @Module({
   imports: [
