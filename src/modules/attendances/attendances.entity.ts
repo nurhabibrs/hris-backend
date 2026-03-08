@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/users.entity';
 
-@Entity('attendance')
+@Entity('attendances')
 @Unique(['user', 'attendance_date'])
 export class Attendance {
   @PrimaryGeneratedColumn()
