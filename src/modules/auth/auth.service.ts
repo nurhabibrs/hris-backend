@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { User } from '../users/users.entity';
+import { User, UserRole } from '../users/users.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
@@ -30,6 +30,37 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isMatch = await bcrypt.compare(dto.password, user.password);
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
+
+  async loginAdmin(dto: LoginDto) {
+    const user = await this.usersRepository.findOne({
+      where: { email: dto.email },
+      relations: ['position'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Only admins can log in here');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.password);

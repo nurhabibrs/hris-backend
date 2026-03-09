@@ -48,6 +48,18 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Post('login-admin')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Admin login and receive a JWT token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful, returns JWT token',
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  loginAdmin(@Body() dto: LoginDto) {
+    return this.authService.loginAdmin(dto);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
