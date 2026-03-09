@@ -17,6 +17,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
@@ -28,6 +37,8 @@ import { extname } from 'path';
 import { JwtPayload as AuthenticatedUser } from '../../interfaces/jwt.interface';
 import { FindAllUserDto } from './dto/findUser.dto';
 
+@ApiTags('Users')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
@@ -35,6 +46,10 @@ export class UsersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all users (admin only)' })
+  @ApiResponse({ status: 200, description: 'List of users' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden – admin only' })
   findAll(@Req() req: Request, @Query() query: FindAllUserDto) {
     const currentUser = req.user as AuthenticatedUser;
 
@@ -47,12 +62,21 @@ export class UsersController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new user (admin only)' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden – admin only' })
   create(@Body() dto: CreateUserDto, @Req() req: Request) {
     const currentUser = req.user as AuthenticatedUser;
 
@@ -65,6 +89,18 @@ export class UsersController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a user (self or admin)' })
+  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description:
+      'User update payload. All fields are optional. Use multipart/form-data when uploading a profile photo.',
+    type: UpdateUserDto,
+  })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   @UseInterceptors(
     FileInterceptor('profile_photo', {
       storage: diskStorage({
