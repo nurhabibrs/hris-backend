@@ -8,7 +8,7 @@ import { FindAllAttendanceDto, FindByIdDto } from './dto/findAttendance.dto';
 
 const CHECK_IN_DEADLINE_HOUR = 7;
 const CHECK_OUT_EARLIEST_HOUR = 17;
-const DEFAULT_ATTENDANCE_TIMEZONE = 'Asia/Jakarta';
+const OFFICE_TIMEZONE = process.env.OFFICE_TIMEZONE!;
 
 @Injectable()
 export class AttendancesService {
@@ -24,11 +24,11 @@ export class AttendancesService {
 
   private resolveAttendanceTimezone(): string {
     const configuredTimezone = this.configService
-      .get<string>('ATTENDANCE_TIMEZONE')
+      .get<string>('OFFICE_TIMEZONE')
       ?.trim();
 
     if (!configuredTimezone) {
-      return DEFAULT_ATTENDANCE_TIMEZONE;
+      return OFFICE_TIMEZONE;
     }
 
     try {
@@ -38,7 +38,7 @@ export class AttendancesService {
 
       return configuredTimezone;
     } catch {
-      return DEFAULT_ATTENDANCE_TIMEZONE;
+      return OFFICE_TIMEZONE;
     }
   }
 
