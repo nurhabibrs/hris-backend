@@ -27,8 +27,6 @@ export class AttendancesService {
       .get<string>('ATTENDANCE_TIMEZONE')
       ?.trim();
 
-    console.log('Configured attendance timezone:', configuredTimezone);
-
     if (!configuredTimezone) {
       return DEFAULT_ATTENDANCE_TIMEZONE;
     }
