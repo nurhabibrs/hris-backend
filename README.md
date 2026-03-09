@@ -11,6 +11,7 @@ A REST API for a Human Resource Information System (HRIS) built with [NestJS](ht
 - **Authentication:** JWT (passport-jwt) with token blacklisting
 - **Validation:** class-validator + class-transformer
 - **File Uploads:** Multer (profile photos)
+- **API Documentation:** Swagger / OpenAPI (`@nestjs/swagger`)
 
 ---
 
@@ -64,6 +65,24 @@ npm run start:prod
 The server starts on `http://localhost:8000` (or the `PORT` env value).
 
 Static profile photos are served at `/uploads/profile_photo/<filename>`.
+
+---
+
+## API Documentation (Swagger)
+
+Once the server is running, interactive API documentation is available at:
+
+```
+http://localhost:8000/api/docs
+```
+
+The Swagger UI lists all endpoints grouped by tag (**Auth**, **Users**, **Attendances**, **Positions**) with full request/response schemas. To test protected routes directly from the UI:
+
+1. Call `POST /auth/login` to obtain a JWT token.
+2. Click the **Authorize** button (🔒) at the top of the page.
+3. Enter `Bearer <your_token>` and confirm.
+
+Authorization persists across page refreshes (`persistAuthorization: true`).
 
 ---
 
