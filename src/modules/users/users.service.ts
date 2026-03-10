@@ -201,7 +201,7 @@ export class UsersService {
       `${authUser.name} updated profile`,
     );
 
-    const userId = authUser.userId;
+    const userId = updatedUser.id;
 
     this.loggingProducer.log({
       action: 'UPDATE_PROFILE',
