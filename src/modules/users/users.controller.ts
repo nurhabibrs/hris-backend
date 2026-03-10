@@ -77,11 +77,40 @@ export class UsersController {
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden – admin only' })
-  create(@Body() dto: CreateUserDto, @Req() req: Request) {
+  @UseInterceptors(
+    FileInterceptor('profile_photo', {
+      storage: diskStorage({
+        destination: './uploads/profile_photo',
+        filename: (req, file, cb) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `photo-${unique}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/^image\/(jpeg|png|webp|gif)$/)) {
+          return cb(
+            new BadRequestException('Only image files are allowed'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    }),
+  )
+  create(
+    @Body() dto: CreateUserDto,
+    @Req() req: Request,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     const currentUser = req.user as AuthenticatedUser;
 
     if (currentUser.role !== (UserRole.ADMIN as string)) {
       throw new ForbiddenException('Only admins can create users');
+    }
+
+    if (file) {
+      dto.photo_url = `/uploads/profile_photo/${file.filename}`;
     }
 
     return this.usersService.create(dto);
@@ -150,6 +179,6 @@ export class UsersController {
       dto.photo_url = `/uploads/profile_photo/${file.filename}`;
     }
 
-    return this.usersService.update(id, dto);
+    return this.usersService.update(id, dto, authUser);
   }
 }

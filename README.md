@@ -17,52 +17,109 @@ A REST API for a Human Resource Information System (HRIS) built with [NestJS](ht
 
 ## Prerequisites
 
-- Node.js >= 18
-- PostgreSQL database
+- Node.js >= 18 (local development only)
+- Docker & Docker Compose
 
 ---
 
-## Project Setup
+## Docker Setup (Recommended)
+
+The full stack — NestJS app, PostgreSQL, and RabbitMQ — runs via Docker Compose.
+
+### 1. Create your local env file
+
+```bash
+cp .env.docker.example .env.docker.local
+```
+
+Then edit `.env.docker.local` with your actual credentials. This file is ignored by git and never committed.
+
+### 2. Run the full stack
+
+```bash
+docker compose --env-file .env.docker.local up -d
+```
+
+This starts:
+- **NestJS app** on `http://localhost:8000`
+- **PostgreSQL** on `localhost:5433` (host port, avoids local Postgres conflict)
+- **RabbitMQ** on `localhost:5672`, management UI on `http://localhost:15672`
+
+### 3. Run database migrations
+
+```bash
+docker compose --env-file .env.docker.local exec app npm run migration:run
+```
+
+### 4. View logs
+
+```bash
+# All services
+docker compose --env-file .env.docker.local logs -f
+
+# Single service
+docker compose --env-file .env.docker.local logs -f app
+```
+
+### 5. Stop services
+
+```bash
+docker compose --env-file .env.docker.local down
+
+# Stop and remove all volumes (resets database)
+docker compose --env-file .env.docker.local down -v
+```
+
+---
+
+## Local Development Setup
+
+Run only the database and RabbitMQ in Docker, and the app locally with hot reload.
+
+### 1. Start dependencies
+
+```bash
+docker compose -f docker-compose.dev.yml --env-file .env.docker.local up -d
+```
+
+### 2. Create local app env
+
+```bash
+cp .env-example .env
+```
+
+Edit `.env` — set `DB_PORT` to match `DB_HOST_PORT` in your `.env.docker.local` (default `5433`).
+
+### 3. Install and run
 
 ```bash
 npm install
-```
-
-Create a `.env` file in the project root with the following variables:
-
-```env
-PORT=8000
-
-DB_TYPE=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=hris_db
-
-JWT_SECRET_KEY=your_jwt_secret
-```
-
-Run database migrations:
-
-```bash
 npm run migration:run
+npm run start:dev
 ```
 
----
+The server starts on `http://localhost:8000` (or the `PORT` env value).
 
-## Running the App
+### Production build (without Docker)
 
 ```bash
-# development (watch mode)
-npm run start:dev
-
-# production
 npm run build
 npm run start:prod
 ```
 
-The server starts on `http://localhost:8000` (or the `PORT` env value).
+---
+
+## DB Manager Connection
+
+When using Docker, connect your DB manager to:
+
+| Field    | Value                              |
+|----------|------------------------------------|
+| Host     | `localhost`                        |
+| Port     | `5433` (from `DB_HOST_PORT`)       |
+| Database | `hris_db`                          |
+| Username | `hris_user`                        |
+| Password | value from `.env.docker.local`     |
 
 Static profile photos are served at `/uploads/profile_photo/<filename>`.
 

@@ -12,6 +12,7 @@ import { Position } from '../positions/positions.entity';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { FindAllUserDto } from './dto/findUser.dto';
 import { NotificationGateway } from '../notifications/notifications.gateway';
+import { JwtPayload as AuthenticatedUser } from '../../interfaces/jwt.interface';
 @Injectable()
 export class UsersService {
   constructor(
@@ -142,6 +143,7 @@ export class UsersService {
   async update(
     id: number,
     dto: UpdateUserDto,
+    authUser: AuthenticatedUser,
   ): Promise<{
     message: string;
     data:
@@ -194,7 +196,7 @@ export class UsersService {
       : null;
 
     this.notificationGateway.sendAdminNotification(
-      `${user.name} updated profile`,
+      `${authUser.name} updated profile`,
     );
 
     return {
