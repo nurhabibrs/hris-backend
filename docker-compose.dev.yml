@@ -19,26 +19,6 @@ services:
     networks:
       - hris-network-dev
 
-  # RabbitMQ Message Queue
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: hris-rabbitmq-dev
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
-    ports:
-      - "${RABBITMQ_AMQP_PORT:-5672}:5672"    # AMQP port
-      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # Management UI
-    volumes:
-      - rabbitmq_data_dev:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - hris-network-dev
-
   # NestJS Application
   app:
     build:
@@ -81,7 +61,6 @@ services:
 
 volumes:
   postgres_data_dev:
-  rabbitmq_data_dev:
 
 networks:
   hris-network-dev:
