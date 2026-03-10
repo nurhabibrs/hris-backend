@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: hris-postgres
@@ -19,7 +18,6 @@ services:
     networks:
       - hris-network
 
-  # NestJS Application
   app:
     build:
       context: .
@@ -29,23 +27,20 @@ services:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       PATH_URL: ${PATH_URL}
-      
-      # Database Configuration
+
       DB_TYPE: ${DB_TYPE}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-      
-      # JWT Configuration
+
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      
-      # CORS Configuration
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-      
-      # Timezone
       OFFICE_TIMEZONE: ${OFFICE_TIMEZONE}
+
+      # RabbitMQ connection
+      RABBITMQ_URL: amqp://guest:guest@hris-rabbitmq:5672
     ports:
       - "${PORT}:8000"
     volumes:
@@ -62,4 +57,4 @@ volumes:
 
 networks:
   hris-network:
-    driver: bridge
+    external: true
