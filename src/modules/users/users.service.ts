@@ -71,6 +71,8 @@ export class UsersService {
         'user.name',
         'user.email',
         'user.role',
+        'user.phone_number',
+        'user.photo_url',
         'user.created_at',
         'position.id',
         'position.name',
