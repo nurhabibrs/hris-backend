@@ -34,4 +34,12 @@ export class FindAllUserDto {
   @IsOptional()
   @IsString()
   order?: string = 'desc';
+
+  @ApiPropertyOptional({
+    example: 'admin',
+    description: 'Filter by role',
+  })
+  @IsOptional()
+  @IsString()
+  role?: string;
 }

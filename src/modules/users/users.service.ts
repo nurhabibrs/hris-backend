@@ -62,7 +62,7 @@ export class UsersService {
     })[];
     meta: { total: number; page: number; limit: number; total_pages: number };
   }> {
-    const { name, page, limit, order } = query;
+    const { name, page, limit, order, role } = query;
 
     const qb = this.usersRepository
       .createQueryBuilder('user')
@@ -82,6 +82,10 @@ export class UsersService {
 
     if (name) {
       qb.andWhere('user.name ILIKE :name', { name: `${name}%` });
+    }
+
+    if (role) {
+      qb.andWhere('user.role = :role', { role });
     }
 
     const users = await qb

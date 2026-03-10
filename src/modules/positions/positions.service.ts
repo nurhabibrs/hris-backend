@@ -29,4 +29,21 @@ export class PositionsService {
       data: saved,
     };
   }
+
+  async findAll(): Promise<{ message: string; data: Position[] }> {
+    const positions = await this.positionsRepository
+      .createQueryBuilder('position')
+      .select([
+        'position.id',
+        'position.name',
+        'position.created_at',
+        'position.updated_at',
+      ])
+      .getMany();
+
+    return {
+      message: 'Positions retrieved successfully',
+      data: positions,
+    };
+  }
 }
