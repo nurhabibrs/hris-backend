@@ -13,12 +13,14 @@ import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { FindAllUserDto } from './dto/findUser.dto';
 import { NotificationGateway } from '../notifications/notifications.gateway';
 import { JwtPayload as AuthenticatedUser } from '../../interfaces/jwt.interface';
+import { LoggingProducer } from '../rabbitmq/logging.producer';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private notificationGateway: NotificationGateway,
+    private loggingProducer: LoggingProducer,
   ) {}
 
   async create(dto: CreateUserDto): Promise<{
@@ -198,6 +200,14 @@ export class UsersService {
     this.notificationGateway.sendAdminNotification(
       `${authUser.name} updated profile`,
     );
+
+    const userId = authUser.userId;
+
+    this.loggingProducer.log({
+      action: 'UPDATE_PROFILE',
+      userId: userId,
+      timestamp: new Date(),
+    });
 
     return {
       message: 'User updated successfully',
