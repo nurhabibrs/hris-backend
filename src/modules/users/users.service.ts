@@ -11,11 +11,13 @@ import { User } from './users.entity';
 import { Position } from '../positions/positions.entity';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { FindAllUserDto } from './dto/findUser.dto';
+import { NotificationGateway } from '../notifications/notifications.gateway';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private notificationGateway: NotificationGateway,
   ) {}
 
   async create(dto: CreateUserDto): Promise<{
@@ -190,6 +192,10 @@ export class UsersService {
     const formattedPhotoUrl = photo_url
       ? process.env.PATH_URL! + photo_url
       : null;
+
+    this.notificationGateway.sendAdminNotification(
+      `${user.name} updated profile`,
+    );
 
     return {
       message: 'User updated successfully',
