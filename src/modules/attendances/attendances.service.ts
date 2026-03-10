@@ -192,7 +192,7 @@ export class AttendancesService {
         'password' | 'photo_url' | 'phone_number' | 'role'
       >;
     })[];
-    meta: { total: number; page: number; limit: number; totalPages: number };
+    meta: { total: number; page: number; limit: number; total_pages: number };
   }> {
     const { page, limit, userId, startDate, endDate, isLate, order } = query;
 
@@ -262,7 +262,7 @@ export class AttendancesService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        total_pages: Math.ceil(total / limit),
       },
     };
   }
@@ -284,7 +284,7 @@ export class AttendancesService {
         'password' | 'photo_url' | 'phone_number' | 'role'
       >;
     })[];
-    meta: { total: number; page: number; limit: number; totalPages: number };
+    meta: { total: number; page: number; limit: number; total_pages: number };
   }> {
     const { page, limit, startDate, endDate, isLate, order } = query;
 
@@ -350,7 +350,7 @@ export class AttendancesService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        total_pages: Math.ceil(total / limit),
       },
     };
   }

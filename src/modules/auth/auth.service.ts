@@ -41,6 +41,8 @@ export class AuthService {
     const payload = {
       userId: user.id,
       email: user.email,
+      name: user.name,
+      photo_url: process.env.PATH_URL! + user.photo_url,
       role: user.role,
     };
 
@@ -72,6 +74,8 @@ export class AuthService {
     const payload = {
       userId: user.id,
       email: user.email,
+      name: user.name,
+      photo_url: process.env.PATH_URL! + user.photo_url,
       role: user.role,
     };
 

@@ -18,9 +18,10 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(
-    dto: CreateUserDto,
-  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
+  async create(dto: CreateUserDto): Promise<{
+    message: string;
+    data: Omit<User, 'password' | 'photo_url'> & { photo_url: string | null };
+  }> {
     const existing = await this.usersRepository.findOne({
       where: { email: dto.email },
     });
@@ -44,17 +45,22 @@ export class UsersService {
     const saved = await this.usersRepository.save(user);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = saved;
+    const { password, photo_url, ...result } = saved;
+    const formattedPhotoUrl = photo_url
+      ? process.env.PATH_URL! + photo_url
+      : null;
     return {
       message: 'User created successfully',
-      data: result,
+      data: { ...result, photo_url: formattedPhotoUrl },
     };
   }
 
   async findAll(query: FindAllUserDto): Promise<{
     message: string;
-    data: Omit<User, 'password'>[];
-    meta: { total: number; page: number; limit: number; totalPages: number };
+    data: (Omit<User, 'password' | 'photo_url'> & {
+      photo_url: string | null;
+    })[];
+    meta: { total: number; page: number; limit: number; total_pages: number };
   }> {
     const { name, page, limit, order } = query;
 
@@ -85,19 +91,26 @@ export class UsersService {
 
     return {
       message: 'Users retrieved successfully',
-      data: users,
+      data: users.map((user) => {
+        const { photo_url, ...result } = user;
+        const formattedPhotoUrl = photo_url
+          ? process.env.PATH_URL! + photo_url
+          : null;
+        return { ...result, photo_url: formattedPhotoUrl };
+      }),
       meta: {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        total_pages: Math.ceil(total / limit),
       },
     };
   }
 
-  async findOne(
-    id: number,
-  ): Promise<{ message: string; data: Omit<User, 'password'> }> {
+  async findOne(id: number): Promise<{
+    message: string;
+    data: Omit<User, 'password' | 'photo_url'> & { photo_url: string | null };
+  }> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],
@@ -108,17 +121,25 @@ export class UsersService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
+    const { password, photo_url, ...result } = user;
+    const formattedPhotoUrl = photo_url
+      ? process.env.PATH_URL! + photo_url
+      : null;
     return {
       message: 'User retrieved successfully',
-      data: result,
+      data: { ...result, photo_url: formattedPhotoUrl },
     };
   }
 
   async update(
     id: number,
     dto: UpdateUserDto,
-  ): Promise<{ message: string; data: Omit<User, 'password'> | null }> {
+  ): Promise<{
+    message: string;
+    data:
+      | (Omit<User, 'password' | 'photo_url'> & { photo_url: string | null })
+      | null;
+  }> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['position'],
@@ -159,10 +180,14 @@ export class UsersService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = updatedUser;
+    const { password, photo_url, ...result } = updatedUser;
+    const formattedPhotoUrl = photo_url
+      ? process.env.PATH_URL! + photo_url
+      : null;
+
     return {
       message: 'User updated successfully',
-      data: result,
+      data: { ...result, photo_url: formattedPhotoUrl },
     };
   }
 }
