@@ -42,7 +42,6 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       name: user.name,
-      photo_url: user.photo_url ? process.env.PATH_URL! + user.photo_url : null,
       role: user.role,
     };
 
@@ -75,7 +74,6 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       name: user.name,
-      photo_url: user.photo_url ? process.env.PATH_URL! + user.photo_url : null,
       role: user.role,
     };
 
