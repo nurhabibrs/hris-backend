@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -33,6 +34,7 @@ export class CreateUserDto {
 
   @ApiPropertyOptional({ example: 'password123', description: 'User password' })
   @IsOptional()
+  @MinLength(8)
   @IsString()
   password?: string;
 
