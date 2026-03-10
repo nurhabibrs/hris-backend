@@ -204,7 +204,7 @@ export class UsersService {
     const userId = updatedUser.id;
 
     this.loggingProducer.log({
-      action: 'UPDATE_PROFILE',
+      message: 'UPDATE_PROFILE',
       user_id: userId,
       payload: dto,
       processed_by: authUser.name,

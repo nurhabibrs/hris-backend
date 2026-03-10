@@ -24,11 +24,11 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: hris-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "${RABBITMQ_AMQP_PORT:-5672}:5672"    # AMQP port
-      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # Management UI
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
