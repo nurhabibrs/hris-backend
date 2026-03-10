@@ -1,6 +1,6 @@
 # HRIS Backend
 
-A REST API for a Human Resource Information System (HRIS) built with [NestJS](https://nestjs.com/), TypeORM, and PostgreSQL. It handles employee management, attendance tracking, and job positions with JWT-based authentication.
+A REST API for a Human Resource Information System (HRIS) built with [NestJS](https://nestjs.com/), TypeORM, and PostgreSQL. It handles employee management, attendance tracking, and job positions with JWT-based authentication and real-time WebSocket notifications.
 
 ---
 
@@ -11,6 +11,8 @@ A REST API for a Human Resource Information System (HRIS) built with [NestJS](ht
 - **Authentication:** JWT (passport-jwt) with token blacklisting
 - **Validation:** class-validator + class-transformer
 - **File Uploads:** Multer (profile photos)
+- **Real-time Notifications:** WebSockets via Socket.IO (`@nestjs/websockets`)
+- **Message Queue:** RabbitMQ via `@nestjs/microservices` (event logging)
 - **API Documentation:** Swagger / OpenAPI (`@nestjs/swagger`)
 
 ---
@@ -24,9 +26,17 @@ A REST API for a Human Resource Information System (HRIS) built with [NestJS](ht
 
 ## Docker Setup (Recommended)
 
-The full stack — NestJS app, PostgreSQL, and RabbitMQ — runs via Docker Compose.
+The full stack — NestJS app and PostgreSQL — runs via Docker Compose. RabbitMQ must be available on the shared `hris-network` (see below).
 
-### 1. Create your local env file
+### 1. Create the external Docker network (one-time)
+
+The compose file uses an external network. Create it once before first run:
+
+```bash
+docker network create hris-network
+```
+
+### 2. Create your local env file
 
 ```bash
 cp .env.docker.example .env.docker.local
@@ -34,7 +44,18 @@ cp .env.docker.example .env.docker.local
 
 Then edit `.env.docker.local` with your actual credentials. This file is ignored by git and never committed.
 
-### 2. Run the full stack
+Key variables to review:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST_PORT` | Host port exposed for PostgreSQL | `5432` |
+| `DB_PASSWORD` | PostgreSQL password | `change_me` |
+| `JWT_SECRET_KEY` | JWT signing secret | `change_me` |
+| `OFFICE_TIMEZONE` | Timezone for attendance rules | `Asia/Jakarta` |
+| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | see example file |
+| `RABBITMQ_URL` | RabbitMQ AMQP connection URL | `amqp://guest:guest@hris-rabbitmq:5672` |
+
+### 3. Run the full stack
 
 ```bash
 docker compose --env-file .env.docker.local up -d
@@ -42,16 +63,17 @@ docker compose --env-file .env.docker.local up -d
 
 This starts:
 - **NestJS app** on `http://localhost:8000`
-- **PostgreSQL** on `localhost:5433` (host port, avoids local Postgres conflict)
-- **RabbitMQ** on `localhost:5672`, management UI on `http://localhost:15672`
+- **PostgreSQL** on `localhost:${DB_HOST_PORT}` (default `5432`)
 
-### 3. Run database migrations
+> **Note:** RabbitMQ is expected to be running and reachable on `hris-network` at the hostname `hris-rabbitmq`. Start it separately or adjust `RABBITMQ_URL` to match your setup.
+
+### 4. Run database migrations
 
 ```bash
 docker compose --env-file .env.docker.local exec app npm run migration:run
 ```
 
-### 4. View logs
+### 5. View logs
 
 ```bash
 # All services
@@ -61,7 +83,7 @@ docker compose --env-file .env.docker.local logs -f
 docker compose --env-file .env.docker.local logs -f app
 ```
 
-### 5. Stop services
+### 6. Stop services
 
 ```bash
 docker compose --env-file .env.docker.local down
@@ -74,12 +96,12 @@ docker compose --env-file .env.docker.local down -v
 
 ## Local Development Setup
 
-Run only the database and RabbitMQ in Docker, and the app locally with hot reload.
+Run the database in Docker and the app locally with hot reload.
 
-### 1. Start dependencies
+### 1. Start the database
 
 ```bash
-docker compose -f docker-compose.dev.yml --env-file .env.docker.local up -d
+docker compose --env-file .env.docker.local up -d postgres
 ```
 
 ### 2. Create local app env
@@ -88,7 +110,7 @@ docker compose -f docker-compose.dev.yml --env-file .env.docker.local up -d
 cp .env-example .env
 ```
 
-Edit `.env` — set `DB_PORT` to match `DB_HOST_PORT` in your `.env.docker.local` (default `5433`).
+Edit `.env` — set `DB_PORT` to match `DB_HOST_PORT` in your `.env.docker.local` (default `5432`).
 
 ### 3. Install and run
 
@@ -116,7 +138,7 @@ When using Docker, connect your DB manager to:
 | Field    | Value                              |
 |----------|------------------------------------|
 | Host     | `localhost`                        |
-| Port     | `5433` (from `DB_HOST_PORT`)       |
+| Port     | value of `DB_HOST_PORT` (default `5432`) |
 | Database | `hris_db`                          |
 | Username | `hris_user`                        |
 | Password | value from `.env.docker.local`     |
@@ -181,7 +203,7 @@ Authorization persists across page refreshes (`persistAuthorization: true`).
 
 **Query params for `GET /users`:** `name`, `page` (default 1), `limit` (default 10), `order` (default `desc`)
 
-**`PATCH /users/:id`** accepts `multipart/form-data` with a `profile_photo` file field (images only, max 2 MB). Admins can update all fields; employees can only update `phone_number` and `profile_photo`.
+**`POST /users`** and **`PATCH /users/:id`** both accept `multipart/form-data` with an optional `profile_photo` file field (images only — jpeg, png, webp, gif — max 2 MB). Admins can update all fields; employees can only update `phone_number` and `profile_photo`.
 
 ---
 
@@ -196,7 +218,7 @@ Authorization persists across page refreshes (`persistAuthorization: true`).
 
 **Query params for `GET /attendances`:** `page`, `limit`, `order`, `userId`, `startDate`, `endDate`, `isLate`
 
-Check-in is marked **late** if it occurs after 07:00. Only one attendance record is allowed per user per day.
+Check-in is marked **late** if it occurs after **07:00** in the configured office timezone. Check-out is only allowed from **17:00** onwards. Only one attendance record is allowed per user per day. The office timezone is controlled by the `OFFICE_TIMEZONE` environment variable (default: `Asia/Jakarta`).
 
 ---
 
@@ -232,6 +254,8 @@ attendances
 notifications
   id, user_id (FK → users), message, is_read, created_at
 ```
+
+Notifications are delivered in real-time via a **WebSocket gateway** (Socket.IO). Admins receive push notifications (e.g., on employee check-in) through the `admin-notification` event. Attendance events are also published to RabbitMQ (`log_event`) for downstream logging consumers.
 
 ---
 
