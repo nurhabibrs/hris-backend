@@ -9,7 +9,7 @@ import { LoggingProducer } from './logging.producer';
         name: 'LOG_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: [`${process.env.RABBITMQ_URL}`],
+          urls: ['amqp://localhost:5672'],
           queue: 'logs_queue',
           queueOptions: {
             durable: true,
