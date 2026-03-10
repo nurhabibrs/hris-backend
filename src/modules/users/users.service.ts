@@ -205,7 +205,9 @@ export class UsersService {
 
     this.loggingProducer.log({
       action: 'UPDATE_PROFILE',
-      userId: userId,
+      user_id: userId,
+      payload: dto,
+      processed_by: authUser.name,
       timestamp: new Date(),
     });
 
