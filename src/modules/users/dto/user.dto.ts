@@ -63,12 +63,18 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
-  @ApiPropertyOptional({ example: 1, description: 'Position ID' })
+  @ApiPropertyOptional({
+    example: 1,
+    nullable: true,
+    description: 'Position ID',
+  })
   @IsOptional()
-  @IsNumber()
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  @Transform(({ value }) => (value !== undefined ? Number(value) : value))
-  position_id?: number;
+  @IsNumber({}, { each: false })
+  @Transform(({ value }) =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    value === null || value === undefined ? value : Number(value),
+  )
+  position_id?: number | null;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
