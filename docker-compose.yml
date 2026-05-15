@@ -43,9 +43,9 @@ services:
       - "${PORT}:8000"
     volumes:
       - ./uploads:/app/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
     networks:
       - hris-network
     restart: unless-stopped
