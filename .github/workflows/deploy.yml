@@ -9,29 +9,72 @@ concurrency:
   group: production
   cancel-in-progress: true
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+permissions:
+  packages: write
+  contents: read
 
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      repo_lower: ${{ steps.repo_lower.outputs.repo_lower }}
     steps:
-      - name: Deploy App
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set lower case repo name
+        id: repo_lower
+        run: |
+          echo "repo_lower=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose only
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -e
+          source: "docker-compose.yml"
+          target: "/var/www/hris-backend"
 
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          REPO_NAME: ${{ needs.build-and-push.outputs.repo_lower }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: REPO_NAME,GH_PAT
+          script: |
             cd /var/www/hris-backend
 
-            git fetch origin
-            git reset --hard origin/main
+            echo "$GH_PAT" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker compose pull || true
+            docker network create hris-network || true
 
-            docker network create hris-network
-
-            docker compose --env-file .env.docker.local up -d
+            GITHUB_REPOSITORY_LOWER=$REPO_NAME docker compose --env-file .env.docker.local pull
+            GITHUB_REPOSITORY_LOWER=$REPO_NAME docker compose --env-file .env.docker.local up -d
 
             docker image prune -af

@@ -19,9 +19,7 @@ services:
       - hris-network
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY_LOWER}:latest
     container_name: hris-backend
     environment:
       NODE_ENV: ${NODE_ENV}
