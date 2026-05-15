@@ -39,9 +39,5 @@ RUN mkdir -p /app/uploads/profile_photo
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:8000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
-
 # Start the application
 CMD ["node", "dist/main"]
