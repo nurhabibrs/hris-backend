@@ -30,6 +30,8 @@ jobs:
 
             docker compose pull || true
 
-            docker compose up -d --build
+            docker network create hris-network
+
+            docker compose --env-file .env.docker.local up -d
 
             docker image prune -af
